@@ -4,7 +4,6 @@
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-8">
-
       <!-- Card -->
       <div class="card shadow-lg rounded-4 border-0">
         <!-- Header -->
@@ -15,7 +14,11 @@
 
         <!-- Body -->
         <div class="card-body p-4">
-
+          @if(session()->has("success"))
+          <div class="alert alert-success" >
+              {{session()->get('success')}}
+          </div>
+          @endif
           <div class="mb-3">
             <h6 class="text-muted">Incident Number</h6>
             <p class="fw-bold text-dark">{{$incident->number}}</p>
@@ -72,10 +75,21 @@
             <h6 class="text-muted">Description</h6>
             <p class="fw-light">{{$incident->description}}</p>
           </div>
-
+          <form method="POST" action="{{ route('incidents.update', $incident->id) }}">
+          @csrf
+          @method('PUT')
           <div class="mb-3">
             <h6 class="text-muted">Predicted Category</h6>
-            <span class="badge bg-info text-dark">{{$incident->predict_category}}</span>
+            <span  class="badge bg-info text-dark" id="categoryEdit">{{$incident->predict_category}}</span>
+            <span  class="tf-icons bx bx-edit-alt" style="cursor: pointer;"  onclick="toggleCategoryEdit()"></span>
+            <select id="categoryDisplay" class="form-select d-none" name="predict_category">
+              <option value="End user and support" {{ $incident->predict_category == 'End user and support' ? 'selected' : '' }}>End user and support</option>
+              <option value="Mobile money / Fintech" {{ $incident->predict_category == 'Mobile money / Fintech' ? 'selected' : '' }}>Mobile money / Fintech</option>
+              <option value="Enterprise Application" {{ $incident->predict_category == 'Enterprise Application' ? 'selected' : '' }}>Enterprise Application</option>
+              <option value="IT/Cloud" {{ $incident->predict_category == 'IT/Cloud' ? 'selected' : '' }}>IT/Cloud</option>
+              <option value="Data Center" {{ $incident->predict_category == 'Data Center' ? 'selected' : '' }}>Data Center</option>
+              <option value="Telecom" {{ $incident->predict_category == 'Telecom' ? 'selected' : '' }}>Telecom</option>
+            </select>
           </div>
 
           <div class="mb-3">
@@ -84,18 +98,23 @@
                   <span class="badge bg-danger">Request</span>
               @else
                   <span class="badge bg-success">Incident</span>
-                @endif
+              @endif
+              <span class="tf-icons bx bx-edit-alt" style="cursor: pointer;" onclick="toggleTicketTypeEdit()"></span>
+              <select id="ticketTypeSelect" class="form-select d-none" name="incidentType">
+                <option value="0" {{ $incident->incident == 0 ? 'selected' : '' }}>Request</option>
+                <option value="1" {{ $incident->incident == 1 ? 'selected' : '' }}>Incident</option>
+              </select>
           </div>
 
           <div>
             <h6 class="text-muted">Created At Servicenow</h6>
             <p class="fw-light">{{$incident->created_at_servicenow}}</p>
           </div>
-
+           <button type="submit" class="btn btn-success w-100 mt-3" style="background-color: #39b408">Submit</button>
         </div>
+      </form>
       </div>
       <!-- End Card -->
-
     </div>
   </div>
 </div>

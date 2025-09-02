@@ -210,10 +210,35 @@
 
     <!-- Page JS -->
     <script>
+      document.getElementById("categoryDisplay").classList.add("d-none");
+      document.getElementById("categoryEdit").classList.remove("d-none");
+
       function showResult(id) {
         document.querySelectorAll('.result-section').forEach(el => el.style.display = 'none');
         document.getElementById(id).style.display = 'block';
       }
+
+      function toggleCategoryEdit() {
+        const display = document.getElementById("categoryDisplay");
+        const edit = document.getElementById("categoryEdit");
+
+        if (!display || !edit) {
+          console.error("Missing elements with IDs categoryDisplay or categoryEdit");
+          return;
+        }
+
+        display.classList.toggle("d-none");
+      }
+
+      function toggleTicketTypeEdit() {
+        const display = document.getElementById("ticketTypeSelect");
+        if (!display) {
+          console.error("Missing elements with IDs ticketTypeSelect or categoryEdit");
+          return;
+        }
+        display.classList.toggle("d-none");
+      }
+
     </script>
 
     <!-- Place this tag in your head or just before your close body tag. -->

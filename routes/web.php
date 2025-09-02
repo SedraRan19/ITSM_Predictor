@@ -25,3 +25,6 @@ Route::post('/import-incidents', [AdminController::class, 'import_incidents'])->
 Route::post('/predict-ticket', [AdminController::class, 'predict_category'])->name('predict_category');
 Route::post('/incidents/generate-all', [AdminController::class, 'generate_bulk_prediction'])->name('incidents.generateAll');
 Route::post('/incidents/search', [AdminController::class, 'deep_research'])->name('incidents.research');
+Route::put('/incidents/{id}', [AdminController::class, 'incident_update'])->name('incidents.update');
+Route::post('/incidents/export', [AdminController::class, 'generateAll'])->name('incidents.generateAll');
+

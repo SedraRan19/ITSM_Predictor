@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Incident,Ml_prediction_historie,Service_desk,Prediction};
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
-
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -22,6 +23,79 @@ class AdminController extends Controller
     public function display_incident($id){
         $incident = Incident::findOrFail($id); 
         return view('displayIncident',compact('incident'));
+    }
+
+    public function incident_update(Request $request,$id){
+        $incident = Incident::findOrFail($id);
+
+        $oldCategory = $incident->predict_category;
+
+        $incident->predict_category = $request->input('predict_category');
+        $incident->incident = $request->input('incidentType');
+        $incident->save();
+
+        Ml_prediction_historie::create([
+            'incident_id'   => $incident->id,
+            'input_text'    => $incident->description, // or short_description if you prefer
+            'predicted_label' => $oldCategory,
+            'confidence'    => $request->input('confidence', null), // if available
+            'model_used'    => 'TicketCategorizer-v1', // put your model name
+            'algorithm'     => 'ML/DL', // specify algorithm used
+            'predicted_at'  => Carbon::now(),
+            'triggered_by'  => null, // user who updated
+            'is_correct'    => $oldCategory === $incident->predict_category, // check if prediction was correct
+            'actual_label'  => $incident->predict_category,
+        ]);
+
+        return redirect()->back()->with('success', 'Incident updated successfully!');
+    }
+      public function generateAll(Request $request)
+    {
+        $incidentIds = explode(',', $request->input('incident_ids', ''));
+
+        $fileName = 'incidents_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        $response = new StreamedResponse(function () use ($incidentIds) {
+            $handle = fopen('php://output', 'w');
+
+            // CSV header
+            fputcsv($handle, [
+                'Number',
+                'Requested For',
+                'Priority',
+                'Service Desk',
+                'Assignment Group',
+                'Short Description',
+                'Description',
+                'Category Prediction',
+                'Type of Ticket',
+            ]);
+
+            // Fetch incidents by IDs
+            Incident::whereIn('id', $incidentIds)
+                ->chunk(200, function ($incidents) use ($handle) {
+                    foreach ($incidents as $incident) {
+                        fputcsv($handle, [
+                            $incident->number ?? '',
+                            $incident->requested_for ?? '',
+                            $incident->priority ?? '',
+                            $incident->service_desk ?? '',
+                            $incident->assignment_group ?? '',
+                            $incident->short_description ?? '',
+                            $incident->description ?? '',
+                            $incident->predict_category ?? '',
+                            $incident->incident == 0 ? 'Request' : 'Incident',
+                        ]);
+                    }
+                });
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+
+        return $response;
     }
    
     public function index_template() {

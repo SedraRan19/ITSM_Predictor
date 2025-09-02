@@ -106,9 +106,13 @@
                 </div>
               </form>
               <li class="nav-item"> 
-              <button type="button" class="btn btn-outline-secondary me-1"> 
-                <span class="tf-icons bx bx-download"></span>&nbsp; Export 
-              </button> 
+              <form action="{{ route('incidents.generateAll') }}" method="POST">
+                  @csrf
+                  <input type="hidden" name="incident_ids" value="{{ $incidents->pluck('id')->implode(',') }}">
+                  <button type="submit" class="btn btn-outline-secondary">
+                      <span class="tf-icons bx bx-download"></span>&nbsp; Export
+                  </button>
+              </form>
               </li> 
               <li class="nav-item"> 
                 <form action="{{ route('incidents.generateAll') }}" method="POST"> 
