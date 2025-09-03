@@ -49,8 +49,8 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Incident updated successfully!');
     }
-      public function generateAll(Request $request)
-    {
+    
+    public function generateAll(Request $request){
         $incidentIds = explode(',', $request->input('incident_ids', ''));
 
         $fileName = 'incidents_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
@@ -97,7 +97,6 @@ class AdminController extends Controller
 
         return $response;
     }
-   
     public function index_template() {
         $serviceDesks = Service_desk::all();
         $incidents = Incident::paginate(10);
@@ -108,14 +107,113 @@ class AdminController extends Controller
         $badType = $this->getBadType();
         $resolvedTickets = $this->getResolvedTickets();
 
+        // Get ticket type metrics
+        [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
+
+        // Get category metrics
+        [$categoryReport, $accuracyCategory] = $this->getCategoryMetrics();
+
         return view('tables.table', compact(
             'incidents',
             'serviceDesks',
             'totalTickets',
             'badCategorization',
             'badType',
-            'resolvedTickets'
+            'resolvedTickets',
+            'typeReport',
+            'accuracyType',
+            'categoryReport',
+            'accuracyCategory'
         ));
+    }
+
+    /**
+     * Calculate ticket type classification metrics
+     */
+    private function getTicketTypeMetrics() {
+        $typeLabels = [0, 1]; // 0=Request, 1=Incident
+        $typeReport = [];
+        $totalType = Incident::count();
+        $correctType = 0;
+
+        foreach ($typeLabels as $label) {
+            $tp = Incident::where('incident', $label)->count(); // Using incident column for now
+            $fp = 0; // No predicted type column
+            $fn = 0;
+            $support = $tp;
+
+            $precision = ($tp + $fp) > 0 ? round($tp / ($tp + $fp), 2) : 0;
+            $recall = ($tp + $fn) > 0 ? round($tp / ($tp + $fn), 2) : 0;
+            $f1 = ($precision + $recall) > 0 ? round(2 * ($precision * $recall) / ($precision + $recall), 2) : 0;
+
+            $typeReport[$label] = [
+                'precision' => $precision,
+                'recall'    => $recall,
+                'f1'        => $f1,
+                'support'   => $support,
+            ];
+
+            $correctType += $tp;
+        }
+
+        $accuracyType = $totalType > 0 ? round($correctType / $totalType, 2) : 0;
+
+        return [$typeReport, $accuracyType];
+    }
+
+    /**
+     * Calculate multi-class category classification metrics
+     */
+    private function getCategoryMetrics() {
+        $categoryLabels = Incident::select('category')->distinct()->pluck('category');
+        $categoryReport = [];
+        $allPrecision = $allRecall = $allF1 = $allSupport = [];
+        $correctCategory = 0;
+
+        foreach ($categoryLabels as $label) {
+            $tp = Incident::where('category', $label)->where('predict_category', $label)->count();
+            $fp = Incident::where('category', '!=', $label)->where('predict_category', $label)->count();
+            $fn = Incident::where('category', $label)->where('predict_category', '!=', $label)->count();
+            $support = Incident::where('category', $label)->count();
+
+            $precision = ($tp + $fp) > 0 ? round($tp / ($tp + $fp), 2) : 0;
+            $recall = ($tp + $fn) > 0 ? round($tp / ($tp + $fn), 2) : 0;
+            $f1 = ($precision + $recall) > 0 ? round(2 * ($precision * $recall) / ($precision + $recall), 2) : 0;
+
+            $categoryReport[$label] = [
+                'precision' => $precision,
+                'recall'    => $recall,
+                'f1'        => $f1,
+                'support'   => $support,
+            ];
+
+            $allPrecision[] = $precision;
+            $allRecall[] = $recall;
+            $allF1[] = $f1;
+            $allSupport[] = $support;
+            $correctCategory += $tp;
+        }
+
+        $totalCategory = Incident::count();
+        $accuracyCategory = $totalCategory > 0 ? round($correctCategory / $totalCategory, 2) : 0;
+
+        // Macro & Weighted Avg
+        $macroPrecision = count($categoryLabels) > 0 ? round(array_sum($allPrecision) / count($allPrecision), 2) : 0;
+        $macroRecall    = count($categoryLabels) > 0 ? round(array_sum($allRecall) / count($allRecall), 2) : 0;
+        $macroF1        = count($categoryLabels) > 0 ? round(array_sum($allF1) / count($allF1), 2) : 0;
+
+        $weightedPrecision = $totalCategory > 0 ? round(array_sum(array_map(fn($p,$s)=>$p*$s, $allPrecision,$allSupport)) / $totalCategory, 2) : 0;
+        $weightedRecall    = $totalCategory > 0 ? round(array_sum(array_map(fn($r,$s)=>$r*$s, $allRecall,$allSupport)) / $totalCategory, 2) : 0;
+        $weightedF1        = $totalCategory > 0 ? round(array_sum(array_map(fn($f,$s)=>$f*$s, $allF1,$allSupport)) / $totalCategory, 2) : 0;
+
+        $categoryReport['macro avg'] = [
+            'precision'=>$macroPrecision, 'recall'=>$macroRecall, 'f1'=>$macroF1, 'support'=>$totalCategory
+        ];
+        $categoryReport['weighted avg'] = [
+            'precision'=>$weightedPrecision, 'recall'=>$weightedRecall, 'f1'=>$weightedF1, 'support'=>$totalCategory
+        ];
+
+        return [$categoryReport, $accuracyCategory];
     }
 
     private function getTotalTickets() {
@@ -142,6 +240,49 @@ class AdminController extends Controller
         return view('singlePredict',compact('predictions'));
     }
 
+    // public function deep_research(Request $request){
+    //     $serviceDesks = Service_desk::all();
+    //     $query = Incident::query();
+
+    //     if ($request->filled('service_desk')) {
+    //         $query->where('service_desk', $request->service_desk);
+    //     }
+
+    //     if ($request->filled('start_date') && $request->filled('end_date')) {
+    //         $query->whereBetween('created_at_servicenow', [$request->start_date, $request->end_date]);
+    //     }
+
+    //     if ($request->filled('priority')) {
+    //         $query->where('priority', $request->priority);
+    //     }
+        
+    //     $incidents = $query->paginate(10);  
+        
+    //     // Raw counts
+    //     $totalTickets = $this->getTotalTickets();
+    //     $badCategorizationCount = $this->getBadCategorization();
+    //     $badTypeCount = $this->getBadType();
+    //     $resolvedTicketsCount = $this->getResolvedTickets();
+
+    //     // Avoid division by zero
+    //     if ($totalTickets > 0) {
+    //         $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
+    //         $badType = round(($badTypeCount / $totalTickets) * 100, 2);
+    //         $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
+    //     } else {
+    //         $badCategorization = $badType = $resolvedTickets = 0;
+    //     }
+
+    //     return view('tables.table', compact(
+    //         'incidents',
+    //         'serviceDesks',
+    //         'totalTickets',
+    //         'badCategorization',
+    //         'badType',
+    //         'resolvedTickets'
+    //     ));
+    // }
+
     public function deep_research(Request $request){
         $serviceDesks = Service_desk::all();
         $query = Incident::query();
@@ -159,12 +300,27 @@ class AdminController extends Controller
         }
         
         $incidents = $query->paginate(10);  
-        
-        // Metrics
+
+        // Raw counts
         $totalTickets = $this->getTotalTickets();
-        $badCategorization = $this->getBadCategorization();
-        $badType = $this->getBadType();
-        $resolvedTickets = $this->getResolvedTickets();
+        $badCategorizationCount = $this->getBadCategorization();
+        $badTypeCount = $this->getBadType();
+        $resolvedTicketsCount = $this->getResolvedTickets();
+
+        // Avoid division by zero
+        if ($totalTickets > 0) {
+            $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
+            $badType = round(($badTypeCount / $totalTickets) * 100, 2);
+            $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
+        } else {
+            $badCategorization = $badType = $resolvedTickets = 0;
+        }
+
+        // Ticket type metrics
+        [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
+
+        // Category metrics
+        [$categoryReport, $accuracyCategory] = $this->getCategoryMetrics();
 
         return view('tables.table', compact(
             'incidents',
@@ -172,9 +328,14 @@ class AdminController extends Controller
             'totalTickets',
             'badCategorization',
             'badType',
-            'resolvedTickets'
+            'resolvedTickets',
+            'typeReport',
+            'accuracyType',
+            'categoryReport',
+            'accuracyCategory'
         ));
     }
+
 
     public function generate_bulk_prediction(Request $request)
     {

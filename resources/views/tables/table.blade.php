@@ -2,7 +2,46 @@
 
 @section('content')
 <div class="card mb-4" style="border-block-color: #1b4459">
+  
       <div class="row">
+        {{-- <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card p-3 shadow-sm">
+              <h5>ML Model Accuracy</h5>
+              <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($report as $label => $metrics)
+                        <tr>
+                            <td>{{ $label }}</td>
+                            <td>{{ $metrics['precision'] }}</td>
+                            <td>{{ $metrics['recall'] }}</td>
+                            <td>{{ $metrics['f1'] }}</td>
+                            <td>{{ $metrics['support'] }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="table-info">
+                        <td colspan="5"><strong>Accuracy: {{ $accuracy }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card p-3 shadow-sm">
+              <h5>Ticket Metrics</h5>
+              <canvas id="metricsChart"></canvas>
+            </div>
+          </div>
+        </div> --}}
         <!-- Total Tickets -->
        <div class="col-md-3">
           <div class="card shadow">
@@ -10,7 +49,7 @@
                   Total Tickets
               </div>
               <div class="card-body bg-white text-center">
-                  <h3 class="text-dark fw-bold">{{ $totalTickets }}</h3>
+                  <h3 class="text-dark fw-bold">{{ $totalTickets }}%</h3>
                   {{--  --}}
               </div>
           </div>
@@ -23,7 +62,7 @@
                   Bad Categorization
               </div>
               <div class="card-body bg-white text-center">
-                  <h3 class="text-dark fw-bold">{{ $badCategorization }}</h3>
+                  <h3 class="text-dark fw-bold">{{ $badCategorization }}%</h3>
               </div>
           </div>
         </div>
@@ -35,7 +74,7 @@
                     Wrong Ticket Type
                 </div>
                 <div class="card-body bg-white text-center">
-                    <h3 class="text-dark fw-bold">{{ $badType }}</h3>
+                    <h3 class="text-dark fw-bold">{{ $badType }}%</h3>
 
                 </div>
             </div>
@@ -48,12 +87,74 @@
                     Resolved Tickets
                 </div>
                 <div class="card-body bg-white text-center ">
-                    <h3 class="text-dark fw-bold">{{ $resolvedTickets }}</h3>
-
+                    <h3 class="text-dark fw-bold">{{ $resolvedTickets }}%</h3>
                 </div>
             </div>
         </div>
     </div>
+    <div class="row mt-2">
+      <div class="col-md-6">
+        <div class="table-responsive text-nowrap mt-2">
+          <table class="table table-bordered table-sm mb-0">
+                <thead class="table-light">
+                    <tr class="small text-center">
+                        <th>Label</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody class="small text-center">
+                    @foreach($typeReport as $label => $metrics)
+                        <tr>
+                            {{-- <td>{{ $label == 0 ? 'Request' : 'Incident' }}</td> --}}
+                            <td>
+                            @if($label == 0)
+                                <span class="badge bg-danger">Request</span>
+                            @else
+                                <span class="badge bg-success">Incident</span>
+                              @endif
+                            </td>
+                            <td>{{ $metrics['precision'] }}</td>
+                            <td>{{ $metrics['recall'] }}</td>
+                            <td>{{ $metrics['f1'] }}</td>
+                            <td>{{ $metrics['support'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="table-responsive text-nowrap mt-2">
+            <table class="table table-bordered table-sm mb-0">
+              <thead class="table-light">
+                  <tr class="small text-center">
+                      <th>Category</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>F1-score</th>
+                      <th>Support</th>
+                  </tr>
+              </thead>
+              <tbody class="small text-center">
+                  @foreach($categoryReport as $label => $metrics)
+                      <tr>
+                          <td>{{ $label }}</td>
+                          <td>{{ $metrics['precision'] }}</td>
+                          <td>{{ $metrics['recall'] }}</td>
+                          <td>{{ $metrics['f1'] }}</td>
+                          <td>{{ $metrics['support'] }}</td>
+                      </tr>
+                  @endforeach
+              </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
 </div>
 <div class="card" style="border-block-color: #1b4459">
         <nav class="navbar navbar-expand-lg navbar-light mb-1">
