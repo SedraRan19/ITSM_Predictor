@@ -240,49 +240,6 @@ class AdminController extends Controller
         return view('singlePredict',compact('predictions'));
     }
 
-    // public function deep_research(Request $request){
-    //     $serviceDesks = Service_desk::all();
-    //     $query = Incident::query();
-
-    //     if ($request->filled('service_desk')) {
-    //         $query->where('service_desk', $request->service_desk);
-    //     }
-
-    //     if ($request->filled('start_date') && $request->filled('end_date')) {
-    //         $query->whereBetween('created_at_servicenow', [$request->start_date, $request->end_date]);
-    //     }
-
-    //     if ($request->filled('priority')) {
-    //         $query->where('priority', $request->priority);
-    //     }
-        
-    //     $incidents = $query->paginate(10);  
-        
-    //     // Raw counts
-    //     $totalTickets = $this->getTotalTickets();
-    //     $badCategorizationCount = $this->getBadCategorization();
-    //     $badTypeCount = $this->getBadType();
-    //     $resolvedTicketsCount = $this->getResolvedTickets();
-
-    //     // Avoid division by zero
-    //     if ($totalTickets > 0) {
-    //         $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
-    //         $badType = round(($badTypeCount / $totalTickets) * 100, 2);
-    //         $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
-    //     } else {
-    //         $badCategorization = $badType = $resolvedTickets = 0;
-    //     }
-
-    //     return view('tables.table', compact(
-    //         'incidents',
-    //         'serviceDesks',
-    //         'totalTickets',
-    //         'badCategorization',
-    //         'badType',
-    //         'resolvedTickets'
-    //     ));
-    // }
-
     public function deep_research(Request $request){
         $serviceDesks = Service_desk::all();
         $query = Incident::query();
