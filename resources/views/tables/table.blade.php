@@ -4,93 +4,51 @@
 <div class="card mb-4" style="border-block-color: #1b4459">
   
       <div class="row">
-        {{-- <div class="row mt-4">
-          <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-              <h5>ML Model Accuracy</h5>
-              <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Label</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1-score</th>
-                        <th>Support</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($report as $label => $metrics)
-                        <tr>
-                            <td>{{ $label }}</td>
-                            <td>{{ $metrics['precision'] }}</td>
-                            <td>{{ $metrics['recall'] }}</td>
-                            <td>{{ $metrics['f1'] }}</td>
-                            <td>{{ $metrics['support'] }}</td>
-                        </tr>
-                    @endforeach
-                    <tr class="table-info">
-                        <td colspan="5"><strong>Accuracy: {{ $accuracy }}</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-          </div>
-
-          <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-              <h5>Ticket Metrics</h5>
-              <canvas id="metricsChart"></canvas>
-            </div>
-          </div>
-        </div> --}}
         <!-- Total Tickets -->
        <div class="col-md-3">
           <div class="card shadow">
-              <div class="card-header text-center text-white" style="background-color: #4e73df;">
+              <div class="card-header text-center text-white" style="background-color: #4e73df; padding: 0.5rem;">
                   Total Tickets
               </div>
-              <div class="card-body bg-white text-center">
-                  <h3 class="text-dark fw-bold">{{ $totalTickets }}%</h3>
-                  {{--  --}}
+              <div class="card-body bg-white text-center py-2">
+                  <h4 class="text-dark fw-bold mb-0">{{ $totalTickets }}</h4>
               </div>
           </div>
       </div>
 
-        <!-- Bad Categorization -->
-        <div class="col-md-3">
+      <div class="col-md-3">
           <div class="card shadow">
-              <div class="card-header text-center text-white" style="background-color: #e74a3b;">
+              <div class="card-header text-center text-white" style="background-color: #e74a3b; padding: 0.5rem;">
                   Bad Categorization
               </div>
-              <div class="card-body bg-white text-center">
-                  <h3 class="text-dark fw-bold">{{ $badCategorization }}%</h3>
+              <div class="card-body bg-white text-center py-2">
+                  <h4 class="text-dark fw-bold mb-0">{{ $badCategorization }}%</h4>
               </div>
           </div>
-        </div>
+      </div>
 
-        <!-- Wrong Ticket Type -->
-        <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-header text-center text-white" style="background-color: #f6c23e;">
-                    Wrong Ticket Type
-                </div>
-                <div class="card-body bg-white text-center">
-                    <h3 class="text-dark fw-bold">{{ $badType }}%</h3>
+      <div class="col-md-3">
+          <div class="card shadow">
+              <div class="card-header text-center text-white" style="background-color: #f6c23e; padding: 0.5rem;">
+                  Wrong Ticket Type
+              </div>
+              <div class="card-body bg-white text-center py-2">
+                  <h4 class="text-dark fw-bold mb-0">{{ $badType }}%</h4>
+              </div>
+          </div>
+      </div>
 
-                </div>
-            </div>
-        </div>
+      <div class="col-md-3">
+          <div class="card shadow">
+              <div class="card-header text-center text-white" style="background-color: #1cc88a; padding: 0.5rem;">
+                  Resolved Tickets
+              </div>
+              <div class="card-body bg-white text-center py-2">
+                  <h4 class="text-dark fw-bold mb-0">{{ $resolvedTickets }}%</h4>
+              </div>
+          </div>
+      </div>
 
-        <!-- Accuracy of Model -->
-         <div class="col-md-3">
-            <div class="card shadow">
-                <div class="card-header text-center text-white" style="background-color: #1cc88a;">
-                    Resolved Tickets
-                </div>
-                <div class="card-body bg-white text-center ">
-                    <h3 class="text-dark fw-bold">{{ $resolvedTickets }}%</h3>
-                </div>
-            </div>
-        </div>
     </div>
     <div class="row mt-2">
       <div class="col-md-6">
@@ -206,8 +164,8 @@
                   </button>
                 </div>
               </form>
-              <li class="nav-item"> 
-              <form action="{{ route('incidents.generateAll') }}" method="POST">
+              <li class="nav-item me-2"> 
+              <form action="{{ route('incidents.export') }}" method="POST">
                   @csrf
                   <input type="hidden" name="incident_ids" value="{{ $incidents->pluck('id')->implode(',') }}">
                   <button type="submit" class="btn btn-outline-secondary">
@@ -263,7 +221,16 @@
                 {{ $incident->requested_for ?? '' }}
               </td>
               <td>
-                {{ $incident->priority ?? '' }}
+                  @php
+                      $priorities = [
+                          1 => 'Critical',
+                          2 => 'High',
+                          3 => 'Moderate',
+                          4 => 'Low'
+                      ];
+                  @endphp
+
+                  {{ $priorities[$incident->priority] ?? $incident->priority }}
               </td>
               {{-- <td>
                 {{ $incident->category ?? '' }}

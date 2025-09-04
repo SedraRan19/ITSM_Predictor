@@ -101,11 +101,20 @@ class AdminController extends Controller
         $serviceDesks = Service_desk::all();
         $incidents = Incident::paginate(10);
 
-        // Metrics
+        // Raw counts
         $totalTickets = $this->getTotalTickets();
-        $badCategorization = $this->getBadCategorization();
-        $badType = $this->getBadType();
-        $resolvedTickets = $this->getResolvedTickets();
+        $badCategorizationCount = $this->getBadCategorization();
+        $badTypeCount = $this->getBadType();
+        $resolvedTicketsCount = $this->getResolvedTickets();
+
+        // Convert to percentages (2 decimals)
+        if ($totalTickets > 0) {
+            $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
+            $badType = round(($badTypeCount / $totalTickets) * 100, 2);
+            $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
+        } else {
+            $badCategorization = $badType = $resolvedTickets = 0;
+        }
 
         // Get ticket type metrics
         [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
@@ -126,6 +135,7 @@ class AdminController extends Controller
             'accuracyCategory'
         ));
     }
+
 
     /**
      * Calculate ticket type classification metrics
@@ -264,7 +274,7 @@ class AdminController extends Controller
         $badTypeCount = $this->getBadType();
         $resolvedTicketsCount = $this->getResolvedTickets();
 
-        // Avoid division by zero
+        // Convert to percentages (2 decimals)
         if ($totalTickets > 0) {
             $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
             $badType = round(($badTypeCount / $totalTickets) * 100, 2);
@@ -316,11 +326,26 @@ class AdminController extends Controller
             $predictionIncidentOrNot = trim(shell_exec($commandIncidentOrNot));
             $predictionCat = trim(shell_exec($commandCat));
 
-            // Metrics
+            // Raw counts
             $totalTickets = $this->getTotalTickets();
-            $badCategorization = $this->getBadCategorization();
-            $badType = $this->getBadType();
-            $resolvedTickets = $this->getResolvedTickets();
+            $badCategorizationCount = $this->getBadCategorization();
+            $badTypeCount = $this->getBadType();
+            $resolvedTicketsCount = $this->getResolvedTickets();
+
+            // Convert to percentages (2 decimals)
+            if ($totalTickets > 0) {
+                $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
+                $badType = round(($badTypeCount / $totalTickets) * 100, 2);
+                $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
+            } else {
+                $badCategorization = $badType = $resolvedTickets = 0;
+            }
+
+            // Ticket type metrics
+            [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
+
+            // Category metrics
+            [$categoryReport, $accuracyCategory] = $this->getCategoryMetrics();
 
             return view('tables.table', compact(
                 'incidents',
@@ -328,10 +353,15 @@ class AdminController extends Controller
                 'totalTickets',
                 'badCategorization',
                 'badType',
-                'resolvedTickets'
+                'resolvedTickets',
+                'typeReport',
+                'accuracyType',
+                'categoryReport',
+                'accuracyCategory'
             ));
         }
     }
+
 
 
     public function predict_category(Request $request)

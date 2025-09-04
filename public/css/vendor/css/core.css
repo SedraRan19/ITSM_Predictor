@@ -3354,13 +3354,15 @@ textarea.form-control-lg {
 }
 
 .navbar {
-  position: relative;
+  position: relative !important;
+  top: auto !important;
+  z-index: 2;  
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  /* padding-top: 0.5rem; */
+  /* padding-bottom: 0.5rem; */
 }
 .navbar > .container,
 .navbar > .container-fluid,

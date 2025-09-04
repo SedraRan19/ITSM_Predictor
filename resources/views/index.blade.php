@@ -77,10 +77,10 @@
 
 <body>
   <div class="layout-wrapper layout-content-navbar">
-    <div class="layout-page">
+    <div class="layout-page" id="lottie-animation">
       <!-- Basic -->
-      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-5" >
-        <div class="container-fluid" style="background-color: #1b4459">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <div class="container-fluid" style="background-color: #1b4459; position: relative">
           <a class="navbar-brand" href="javascript:void(0)" style="color: #fff">ITSM Auditor</a>
           <button class="navbar-toggler" data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse" type="button" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -238,9 +238,16 @@
         }
         display.classList.toggle("d-none");
       }
+       var animation = lottie.loadAnimation({
+        container: document.getElementById('lottie-animation'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'generate.json' // your downloaded animation
+      });
 
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
