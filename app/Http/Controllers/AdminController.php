@@ -12,8 +12,13 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     protected static $username = "AIData";
-    protected static $password = "267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>";
-
+    protected static $password = "{qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg";
+    // PROD: {qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg
+    // DEV : 267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>
+    
+    public function index_auth(){
+        return view('auth');
+    }
 
     public function add_incident(){
         $serviceDesks = Service_desk::all();
@@ -304,7 +309,7 @@ class AdminController extends Controller
     }
 
 
-    public function generate_bulk_prediction(Request $request)
+   public function generate_bulk_prediction(Request $request)
     {
         $serviceDesks = Service_desk::all();
         $ids = explode(',', $request->incident_ids);
@@ -313,54 +318,60 @@ class AdminController extends Controller
         foreach ($incidents as $incident) {
             $text = $incident->short_description . ' ' . $incident->description;
 
-            // Predict if it's an incident or not
-            $commandIncidentOrNot = "python3 " 
-                . escapeshellarg("/home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/laravelPredictCatML.py") 
-                . " " . escapeshellarg($text);
+            // Commandes Python
+            $commandIncidentOrNot = "python3 /home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/laravelPredictCatML.py " . escapeshellarg($text);
+            $commandCat = "python3 /home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/catPredictLar.py " . escapeshellarg($text);
 
-            // Predict category
-            $commandCat = "python3 " 
-                . escapeshellarg("/home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/catPredictLar.py") 
-                . " " . escapeshellarg($text);
+            // Exécution
+            $outputIncidentOrNot = trim(shell_exec($commandIncidentOrNot));
+            $outputCat = trim(shell_exec($commandCat));
 
-            $predictionIncidentOrNot = trim(shell_exec($commandIncidentOrNot));
-            $predictionCat = trim(shell_exec($commandCat));
-
-            // Raw counts
-            $totalTickets = $this->getTotalTickets();
-            $badCategorizationCount = $this->getBadCategorization();
-            $badTypeCount = $this->getBadType();
-            $resolvedTicketsCount = $this->getResolvedTickets();
-
-            // Convert to percentages (2 decimals)
-            if ($totalTickets > 0) {
-                $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
-                $badType = round(($badTypeCount / $totalTickets) * 100, 2);
-                $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
-            } else {
-                $badCategorization = $badType = $resolvedTickets = 0;
-            }
-
-            // Ticket type metrics
-            [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
-
-            // Category metrics
-            [$categoryReport, $accuracyCategory] = $this->getCategoryMetrics();
-
-            return view('tables.table', compact(
-                'incidents',
-                'serviceDesks',
-                'totalTickets',
-                'badCategorization',
-                'badType',
-                'resolvedTickets',
-                'typeReport',
-                'accuracyType',
-                'categoryReport',
-                'accuracyCategory'
-            ));
+            // Mise à jour ou création de l’incident
+            Incident::updateOrCreate(
+                ['number' => $incident->number], // clé unique
+                [
+                    'incident'         => $outputIncidentOrNot, // Incident ou non
+                    'predict_category' => $outputCat            // Catégorie prédite
+                ]
+            );
         }
+
+        // Raw counts
+        $totalTickets = $this->getTotalTickets();
+        $badCategorizationCount = $this->getBadCategorization();
+        $badTypeCount = $this->getBadType();
+        $resolvedTicketsCount = $this->getResolvedTickets();
+
+        // Convert to percentages (2 decimals)
+        if ($totalTickets > 0) {
+            $badCategorization = round(($badCategorizationCount / $totalTickets) * 100, 2);
+            $badType = round(($badTypeCount / $totalTickets) * 100, 2);
+            $resolvedTickets = round(($resolvedTicketsCount / $totalTickets) * 100, 2);
+        } else {
+            $badCategorization = $badType = $resolvedTickets = 0;
+        }
+
+        // Ticket type metrics
+        [$typeReport, $accuracyType] = $this->getTicketTypeMetrics();
+
+        // Category metrics
+        [$categoryReport, $accuracyCategory] = $this->getCategoryMetrics();
+
+        return view('tables.table', compact(
+            'incidents',
+            'serviceDesks',
+            'totalTickets',
+            'badCategorization',
+            'badType',
+            'resolvedTickets',
+            'typeReport',
+            'accuracyType',
+            'categoryReport',
+            'accuracyCategory'
+        ));
     }
+
+
 
 
 
@@ -407,9 +418,9 @@ class AdminController extends Controller
 
         // 3️⃣ Call ServiceNow API
         $username = "AIData";
-        $password = "267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>";
+        $password = "{qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg";
         $response = Http::withBasicAuth($username,$password)
-            ->get('https://axiandev.service-now.com/api/now/table/incident', [
+            ->get('https://axiangroup.service-now.com/api/now/table/incident', [
                 'sysparm_fields' => 'number,u_affected_user,assignment_group,category,priority,u_opco,short_description,description,sys_created_on',
                 'sysparm_query'  => sprintf(
                     'u_opco=%s^priority=%s^sys_created_onBETWEENjavascript:gs.dateGenerate("%s","00:00:00")@javascript:gs.dateGenerate("%s","23:59:59")',
@@ -479,7 +490,7 @@ class AdminController extends Controller
     public static function getIncidents()
     {
         $response = Http::withBasicAuth(self::$username, self::$password)
-            ->get('https://axiandev.service-now.com/api/now/table/incident', [
+            ->get('https://axiangroup.service-now.com/api/now/table/incident', [
                 'sysparm_limit' => 5,
                 'sysparm_fields' => 'number,u_affected_user,assignment_group,category,u_opco,short_description,description'
             ]);
@@ -495,9 +506,9 @@ class AdminController extends Controller
     public static function getGroupNameById($groupId)
     {
         $username = "AIData";
-        $password = "267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>";
+        $password = "{qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg";
         $response = Http::withBasicAuth($username,$password)
-            ->get("https://axiandev.service-now.com/api/now/table/sys_user_group/{$groupId}", [
+            ->get("https://axiangroup.service-now.com/api/now/table/sys_user_group/{$groupId}", [
                 'sysparm_fields' => 'name'
             ]);
 
@@ -510,9 +521,9 @@ class AdminController extends Controller
     public static function getCompanyNameById($companyId)
     {
         $username = "AIData";
-        $password = "267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>";
+        $password = "{qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg";
         $response = Http::withBasicAuth($username, $password)
-            ->get("https://axiandev.service-now.com/api/now/table/core_company/{$companyId}", [
+            ->get("https://axiangroup.service-now.com/api/now/table/core_company/{$companyId}", [
                 'sysparm_fields' => 'name'
             ]);
 
@@ -526,9 +537,9 @@ class AdminController extends Controller
     public static function getNameById($userId)
     {
         $username = "AIData";
-        $password = "267A#j+]dBCPtbO<ZVf)8GQs92UBJ2kYxYE={stzN6OS9MDrWtM6BypYcVDm;XrHgCm;vn2RYNnky-OT-)[G,O;R>-ie[#Wkqz>>";
+        $password = "{qQm%1yQ)l.tvso}@Rf_20wp^[hR:(&h2J17lQe^6N3%M*[ItRJ0Kf*zpk;cL2n=)^SOIPfW>)f%g@NxiNG^+&r!npfCkkKC;>Yg";
         $response = Http::withBasicAuth($username, $password)
-            ->get("https://axiandev.service-now.com/api/now/table/sys_user/{$userId}", [
+            ->get("https://axiangroup.service-now.com/api/now/table/sys_user/{$userId}", [
                 'sysparm_fields' => 'name'
             ]);
 

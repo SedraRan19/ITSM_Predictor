@@ -24,7 +24,8 @@ Route::get('/signle/predict',[AdminController::class,'index_single_prediction'])
 Route::post('/import-incidents', [AdminController::class, 'import_incidents'])->name('incidents.import');
 Route::post('/predict-ticket', [AdminController::class, 'predict_category'])->name('predict_category');
 Route::post('/incidents/generate-all', [AdminController::class, 'generate_bulk_prediction'])->name('incidents.generateAll');
-Route::post('/incidents/search', [AdminController::class, 'deep_research'])->name('incidents.research');
+Route::match(['get', 'post'], '/incidents/search', [AdminController::class, 'deep_research'])->name('incidents.research');
 Route::put('/incidents/{id}', [AdminController::class, 'incident_update'])->name('incidents.update');
 Route::post('/incidents/export', [AdminController::class, 'generateAll'])->name('incidents.export');
+Route::get('/auth',[AdminController::class,'index_auth'])->name('signin');
 

@@ -75,44 +75,69 @@
             <h6 class="text-muted">Description</h6>
             <p class="fw-light">{{$incident->description}}</p>
           </div>
-          <form method="POST" action="{{ route('incidents.update', $incident->id) }}">
-          @csrf
-          @method('PUT')
-          <div class="mb-3">
-            <h6 class="text-muted">Predicted Category</h6>
-            <span  class="badge bg-info text-dark" id="categoryEdit">{{$incident->predict_category}}</span>
-            <span  class="tf-icons bx bx-edit-alt" style="cursor: pointer;"  onclick="toggleCategoryEdit()"></span>
-            <select id="categoryDisplay" class="form-select d-none" name="predict_category">
-              <option value="End user and support" {{ $incident->predict_category == 'End user and support' ? 'selected' : '' }}>End user and support</option>
-              <option value="Mobile money / Fintech" {{ $incident->predict_category == 'Mobile money / Fintech' ? 'selected' : '' }}>Mobile money / Fintech</option>
-              <option value="Enterprise Application" {{ $incident->predict_category == 'Enterprise Application' ? 'selected' : '' }}>Enterprise Application</option>
-              <option value="IT/Cloud" {{ $incident->predict_category == 'IT/Cloud' ? 'selected' : '' }}>IT/Cloud</option>
-              <option value="Data Center" {{ $incident->predict_category == 'Data Center' ? 'selected' : '' }}>Data Center</option>
-              <option value="Telecom" {{ $incident->predict_category == 'Telecom' ? 'selected' : '' }}>Telecom</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <h6 class="text-muted">Type of ticket</h6>
-             @if($incident->incident == 0)
-                  <span class="badge bg-danger">Request</span>
-              @else
-                  <span class="badge bg-success">Incident</span>
-              @endif
-              <span class="tf-icons bx bx-edit-alt" style="cursor: pointer;" onclick="toggleTicketTypeEdit()"></span>
-              <select id="ticketTypeSelect" class="form-select d-none" name="incidentType">
-                <option value="0" {{ $incident->incident == 0 ? 'selected' : '' }}>Request</option>
-                <option value="1" {{ $incident->incident == 1 ? 'selected' : '' }}>Incident</option>
-              </select>
-          </div>
-
-          <div>
+           <div>
             <h6 class="text-muted">Created At Servicenow</h6>
             <p class="fw-light">{{$incident->created_at_servicenow}}</p>
           </div>
-           <button type="submit" class="btn btn-success w-100 mt-3" style="background-color: #39b408">Submit</button>
-        </div>
-      </form>
+          <form method="POST" action="{{ route('incidents.update', $incident->id) }}">
+              @csrf
+              @method('PUT')
+
+              <div class="row">
+                  <!-- Predicted Category -->
+                  <div class="col-md-6 mb-3">
+                      <h6 class="text-muted">Predicted Category</h6>
+                      <span class="badge bg-info text-dark" id="categoryEdit">{{$incident->predict_category}}</span>
+                      <span class="tf-icons bx bx-edit-alt" style="cursor: pointer;" onclick="toggleCategoryEdit()"></span>
+                      <select id="categoryDisplay" class="form-select d-none" name="predict_category">
+                          <option value="End user and support" {{ $incident->predict_category == 'End user and support' ? 'selected' : '' }}>End user and support</option>
+                          <option value="Mobile money / Fintech" {{ $incident->predict_category == 'Mobile money / Fintech' ? 'selected' : '' }}>Mobile money / Fintech</option>
+                          <option value="Enterprise Application" {{ $incident->predict_category == 'Enterprise Application' ? 'selected' : '' }}>Enterprise Application</option>
+                          <option value="IT/Cloud" {{ $incident->predict_category == 'IT/Cloud' ? 'selected' : '' }}>IT/Cloud</option>
+                          <option value="Data Center" {{ $incident->predict_category == 'Data Center' ? 'selected' : '' }}>Data Center</option>
+                          <option value="Telecom" {{ $incident->predict_category == 'Telecom' ? 'selected' : '' }}>Telecom</option>
+                      </select>
+                  </div>
+
+                  <!-- Type of Ticket -->
+                  <div class="col-md-6 mb-3">
+                      <h6 class="text-muted">Type of ticket</h6>
+                      @if (empty($incident->predict_category))
+                      @else
+                          {{-- Affichage du type (Request ou Incident) --}}
+                          @if ($incident->incident == 0)
+                              <span class="badge bg-danger">Request</span>
+                          @else
+                              <span class="badge bg-success">Incident</span>
+                          @endif
+                      @endif
+                      <span class="tf-icons bx bx-edit-alt" style="cursor: pointer;" onclick="toggleTicketTypeEdit()"></span>
+                      <select id="ticketTypeSelect" class="form-select d-none" name="incidentType">
+                          <option value="0" {{ $incident->incident == 0 ? 'selected' : '' }}>Request</option>
+                          <option value="1" {{ $incident->incident == 1 ? 'selected' : '' }}>Incident</option>
+                      </select>
+                  </div>
+              </div>
+
+              <button type="submit" class="btn btn-outline-primary btn-sm w-100" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                Update and add into new dataset
+              </button>
+          </form>
+
+          <div class="row">
+              <div class="col-md-6">
+                  <button type="submit" class="btn btn-outline-dark w-100 mt-2">
+                      <span id="btnText2"><i class="bx bx-sync"></i> Generate category with model #2</span>
+                  </button>
+              </div>
+              <div class="col-md-6">
+                  <button type="submit" class="btn btn-outline-dark w-100 mt-2">
+                      <span id="btnText2"><i class="bx bx-sync"></i> Generate type of ticket with model #2</span>
+                  </button>
+              </div>
+          </div>
+
+          </div>
       </div>
       <!-- End Card -->
     </div>

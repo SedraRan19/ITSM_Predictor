@@ -29,7 +29,7 @@
     <!-- Page CSS -->
  
     <!-- Helpers -->
-     <script src="{{asset('css/vendor/js/helpers.js')}}"></script>
+    <script src="{{asset('css/vendor/js/helpers.js')}}"></script>
     <script src="{{asset('css/js/config.js')}}"></script>
     <style>
     .limited-text {
@@ -71,6 +71,18 @@
       0% { opacity: 0; transform: translateY(20px); }
       100% { opacity: 1; transform: translateY(0); }
     }
+   .loading-dots span {
+      animation: blink 1.5s infinite;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.3s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes blink {
+      0%, 80%, 100 { opacity: 0; }
+      40% { opacity: 1; }
+    }
   </style>
 
   </head>
@@ -103,7 +115,7 @@
               <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                   <div class="avatar avatar-online">
-                    <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                   <img src="{{ asset('css/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -112,11 +124,11 @@
                       <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
                           <div class="avatar avatar-online">
-                            <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                            <img src="{{ asset('css/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                           </div>
                         </div>
                         <div class="flex-grow-1">
-                          <span class="fw-semibold d-block">Name</span>
+                          <span class="fw-semibold d-block">Admin</span>
                           <small class="text-muted">Admin</small>
                         </div>
                       </div>
@@ -126,31 +138,7 @@
                     <div class="dropdown-divider"></div>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="#">
-                      <i class="bx bx-user me-2"></i>
-                      <span class="align-middle">My Profile</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#">
-                      <i class="bx bx-cog me-2"></i>
-                      <span class="align-middle">Settings</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#">
-                      <span class="d-flex align-items-center align-middle">
-                        <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                        <span class="flex-grow-1 align-middle">Billing</span>
-                        <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <div class="dropdown-divider"></div>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="auth-login-basic.html">
+                    <a class="dropdown-item" href="{{route('signin')}}">
                       <i class="bx bx-power-off me-2"></i>
                       <span class="align-middle">Log Out</span>
                     </a>
@@ -245,7 +233,10 @@
         autoplay: true,
         path: 'generate.json' // your downloaded animation
       });
-
+        document.getElementById("generateBtn2").addEventListener("click", function() {
+        document.getElementById("btnText2").innerText = "Loading";
+        document.getElementById("btnDots").classList.remove("d-none");
+      });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
     <!-- Place this tag in your head or just before your close body tag. -->

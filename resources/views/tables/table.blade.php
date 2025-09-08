@@ -126,36 +126,41 @@
              <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
               <form action="{{route('incidents.research')}}" method="Post" class="d-flex align-items-center">
                   @csrf
-                {{-- Service Desk Dropdown --}}
+               {{-- Service Desk Dropdown --}}
                 <div class="me-2">
                   <select name="service_desk" class="form-select">
                     <option value="">Service Desk</option>
                     @foreach($serviceDesks as $sd)
-                      <option value="{{ $sd->name }}">{{ $sd->name }}</option>
+                      <option value="{{ $sd->name }}" {{ request('service_desk') == $sd->name ? 'selected' : '' }}>
+                        {{ $sd->name }}
+                      </option>
                     @endforeach
                   </select>
                 </div>
 
                 {{-- Start Date --}}
                 <div class="me-2">  
-                  <input type="date" name="start_date" class="form-control" placeholder="Start Date">
+                  <input type="date" name="start_date" class="form-control" 
+                        value="{{ request('start_date') }}" placeholder="Start Date">
                 </div>
 
                 {{-- End Date --}}  
                 <div class="me-2">
-                  <input type="date" name="end_date" class="form-control" placeholder="End Date">
+                  <input type="date" name="end_date" class="form-control" 
+                        value="{{ request('end_date') }}" placeholder="End Date">
                 </div>
 
                 {{-- Priority Dropdown --}}
                 <div class="me-2">
                   <select name="priority" class="form-select">
                     <option value="">Priority</option>
-                    <option value="1">Critical</option>
-                    <option value="2">High</option>
-                    <option value="3">Moderate</option>
-                    <option value="4">Low</option>
+                    <option value="1" {{ request('priority') == '1' ? 'selected' : '' }}>Critical</option>
+                    <option value="2" {{ request('priority') == '2' ? 'selected' : '' }}>High</option>
+                    <option value="3" {{ request('priority') == '3' ? 'selected' : '' }}>Moderate</option>
+                    <option value="4" {{ request('priority') == '4' ? 'selected' : '' }}>Low</option>
                   </select>
                 </div>
+
 
                 {{-- Search Button --}}
                 <div class="me-2">
@@ -177,9 +182,12 @@
                 <form action="{{ route('incidents.generateAll') }}" method="POST"> 
                 @csrf 
                 <input type="hidden" name="incident_ids" value="{{ $incidents->pluck('id')->implode(',') }}"> 
-                <button type="submit" class="btn btn-outline-secondary">
-                <span class="tf-icons bx bx-sync"></span>&nbsp; Generate
-                </button> 
+                <button type="submit" id="generateBtn2" class="btn btn-outline-secondary" title="Model #1">
+                  <span id="btnText2"><i class="bx bx-sync"></i>&nbsp; Generate</span>
+                  <span class="loading-dots d-none" id="btnDots">
+                    <span>.</span><span>.</span><span>.</span>
+                  </span>
+                </button>
                 </form>
               </li> 
             </ul>
@@ -247,16 +255,25 @@
               <td class="limited-text" title="{{ $incident->description ?? '' }}">
                 {{ $incident->description ?? '' }}
               </td>
-              <td>
-                {{$incident->predict_category}}
-              </td>
-              <td>
-              @if($incident->incident == 0)
-                  <span class="badge bg-danger">Request</span>
-              @else
-                  <span class="badge bg-success">Incident</span>
+              <td> 
+                @if (empty($incident->predict_category))
+                    --
+                @else
+                  {{$incident->predict_category}}
                 @endif
               </td>
+             <td>
+                @if (empty($incident->predict_category))
+                    --
+                @else
+                    {{-- Affichage du type (Request ou Incident) --}}
+                    @if ($incident->incident == 0)
+                        <span class="badge bg-danger">Request</span>
+                    @else
+                        <span class="badge bg-success">Incident</span>
+                    @endif
+                @endif
+            </td>
             </tr>
             @endforeach
           </tbody>
