@@ -93,7 +93,7 @@
       <!-- Basic -->
       <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
         <div class="container-fluid" style="background-color: #1b4459; position: relative">
-          <a class="navbar-brand" href="javascript:void(0)" style="color: #fff">ITSM Auditor</a>
+          <a class="navbar-brand" href="javascript:void(0)" style="color: #fff">ITSM Predictor</a>
           <button class="navbar-toggler" data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse" type="button" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -115,7 +115,7 @@
               <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                   <div class="avatar avatar-online">
-                   <img src="{{ asset('css/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
+                   <img src="{{ asset('css/img/avatars/2.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -124,12 +124,12 @@
                       <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
                           <div class="avatar avatar-online">
-                            <img src="{{ asset('css/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
+                            <img src="{{ asset('css/img/avatars/2.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                           </div>
                         </div>
                         <div class="flex-grow-1">
                           <span class="fw-semibold d-block">Admin</span>
-                          <small class="text-muted">Admin</small>
+                          <small class="text-muted">Sedra Heritiana Ranaivoarisoa</small>
                         </div>
                       </div>
                     </a>

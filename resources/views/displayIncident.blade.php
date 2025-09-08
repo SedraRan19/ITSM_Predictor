@@ -1,7 +1,7 @@
 @extends('index')
 
 @section('content')
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <!-- Card -->
@@ -9,7 +9,7 @@
         <!-- Header -->
         <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#1b4459; border-top-left-radius:1rem; border-top-right-radius:1rem;">
           <h5 class="mb-0 text-white">Incident Details</h5>
-          <span class="badge bg-warning text-dark">Active</span>
+          {{-- <span class="badge bg-warning text-dark">Active</span> --}}
         </div>
 
         <!-- Body -->
@@ -19,24 +19,24 @@
               {{session()->get('success')}}
           </div>
           @endif
-          <div class="mb-3">
+          <div class="mb-2">
             <h6 class="text-muted">Incident Number</h6>
             <p class="fw-bold text-dark">{{$incident->number}}</p>
           </div>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6">
               <h6 class="text-muted">Requested For</h6>
               <p class="fw-semibold">{{$incident->requested_for}}</p>
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6">
               <h6 class="text-muted">Category</h6>
               <span class="badge bg-primary">{{$incident->category}}</span>
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6">
               <h6 class="text-muted">Priority</h6>
               {{-- <span class="badge bg-danger">{{$incident->priority}}</span> --}}
               @php
@@ -55,7 +55,7 @@
             </span>
 
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6">
               <h6 class="text-muted">Service Desk</h6>
               <p class="badge bg-danger">{{$incident->service_desk}}</p>
             </div>
@@ -124,19 +124,24 @@
               </button>
           </form>
 
-          <div class="row">
-              <div class="col-md-6">
+         <div class="row">
+          <div class="col-md-6">
+              <form action="{{ route('predict_DL_cat', $incident->id) }}" method="POST">
+                  @csrf
                   <button type="submit" class="btn btn-outline-dark w-100 mt-2">
-                      <span id="btnText2"><i class="bx bx-sync"></i> Generate category with model #2</span>
+                      <i class="bx bx-sync"></i> Generate category with model #2
                   </button>
-              </div>
-              <div class="col-md-6">
-                  <button type="submit" class="btn btn-outline-dark w-100 mt-2">
-                      <span id="btnText2"><i class="bx bx-sync"></i> Generate type of ticket with model #2</span>
-                  </button>
-              </div>
+              </form>
           </div>
-
+          <div class="col-md-6">
+              <form action="{{ route('predict_DL_typeOfTicket', $incident->id) }}" method="POST">
+                  @csrf
+                  <button type="submit" class="btn btn-outline-dark w-100 mt-2">
+                      <i class="bx bx-sync"></i> Generate type of ticket with model #2
+                  </button>
+              </form>
+          </div>
+      </div>
           </div>
       </div>
       <!-- End Card -->

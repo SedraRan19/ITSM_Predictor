@@ -28,4 +28,6 @@ Route::match(['get', 'post'], '/incidents/search', [AdminController::class, 'dee
 Route::put('/incidents/{id}', [AdminController::class, 'incident_update'])->name('incidents.update');
 Route::post('/incidents/export', [AdminController::class, 'generateAll'])->name('incidents.export');
 Route::get('/auth',[AdminController::class,'index_auth'])->name('signin');
+Route::post('/incident/{id}/predict-category', [AdminController::class, 'predict_DL_cat'])->name('predict_DL_cat');
+Route::post('/incident/{id}/predict-type', [AdminController::class, 'predict_DL_typeOfTicket'])->name('predict_DL_typeOfTicket');
 

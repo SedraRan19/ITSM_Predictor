@@ -372,9 +372,6 @@ class AdminController extends Controller
     }
 
 
-
-
-
     public function predict_category(Request $request)
     {
         // ncident, error, outage, panne, problème, failure
@@ -401,6 +398,29 @@ class AdminController extends Controller
         $predictions = Prediction::orderBy('id', 'desc')->get();
         return view('singlePredict',compact('predictions'));
     }
+
+   public function predict_DL_cat(Request $request, $id){
+        $incident = Incident::findOrFail($id);
+        $text = $incident->short_description.' '.$incident->description;
+        $commandCat = "python3 /home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/catPredictLar.py ".escapeshellarg($text);
+        $outputCat = trim(shell_exec($commandCat));
+
+        $incident->update(['predict_category' => $outputCat]);
+
+        return redirect()->back()->with('success', 'Category predicted successfully: '.$outputCat);
+    }
+
+    public function predict_DL_typeOfTicket(Request $request, $id){
+        $incident = Incident::findOrFail($id);
+        $text = $incident->short_description.' '.$incident->description;
+        $command = "python3 /home/sedra/Work/ITU_M2/Stage/predictiveAI/ITSM_predict/Python/laravelPredictCatML.py ".escapeshellarg($text);
+        $output = trim(shell_exec($command));
+
+        $incident->update(['incident' => $output]); // or correct field name
+
+        return redirect()->back()->with('success', 'Type of ticket predicted successfully: '.$output);
+    }
+
 
 
     public function import_incidents(Request $request)
